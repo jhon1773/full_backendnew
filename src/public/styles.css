@@ -355,3 +355,7 @@ pre {
 .admin-user-row { padding: 10px; border: 1px solid var(--line); border-radius: 10px; display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.84);} 
 .admin-user-row .meta { display:flex; gap:8px; align-items:center; }
 .admin-user-row button { margin-left: 8px; }
+
+/* Role panel */
+#rolePanelContent { margin-top: 10px; }
+#rolePanel .placeholder { color: var(--muted); }

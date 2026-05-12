@@ -15,6 +15,11 @@ const adminTab = document.getElementById('adminTab');
 const adminCreateForm = document.getElementById('adminCreateForm');
 const adminUserList = document.getElementById('adminUserList');
 const adminMessage = document.getElementById('adminMessage');
+const rolePanel = document.getElementById('rolePanel');
+const rolePanelTitle = document.getElementById('rolePanelTitle');
+const rolePanelContent = document.getElementById('rolePanelContent');
+const accessAside = document.getElementById('accessAside');
+const publicArea = document.getElementById('publicArea');
 
 const API = '';
 
@@ -132,6 +137,54 @@ function setSession(token, user) {
   roleBox.textContent = user?.role ?? '-';
   countryBox.textContent = user?.country ?? '-';
   renderModules(user?.role);
+  // show role-specific panel when session is set
+  if (user) showRolePanel(user.role, user);
+  // hide public UI (login/create/dashboard) after successful login
+  try { if (accessAside) accessAside.style.display = 'none'; } catch(e){}
+  try { if (publicArea) publicArea.style.display = 'none'; } catch(e){}
+}
+
+function showRolePanel(role, user) {
+  if (!rolePanel) return;
+  rolePanel.style.display = 'block';
+  if (role === 'editor') {
+    rolePanelTitle.textContent = 'Panel Editor';
+    rolePanelContent.innerHTML = `
+      <p class="placeholder">Herramientas para crear y editar contenido.</p>
+      <button id="editorCreateBtn" class="btn btn-soft">Crear contenido</button>
+      <div id="editorList">No hay contenido cargado.</div>
+    `;
+    // attach any editor handlers if necessary
+    const btn = document.getElementById('editorCreateBtn');
+    if (btn) btn.addEventListener('click', () => showToast('Crear contenido (placeholder)', 'success'));
+  } else if (role === 'admin_pais' || role === 'superadmin') {
+    rolePanelTitle.textContent = 'Panel Admin Resumen';
+    rolePanelContent.innerHTML = `
+      <p class="placeholder">Resumen rápido del panel administrativo.</p>
+      <button id="openAdminBtn" class="btn">Abrir Panel Admin</button>
+    `;
+    const openBtn = document.getElementById('openAdminBtn');
+    if (openBtn) openBtn.addEventListener('click', () => { showAdminTab(); });
+    // also ensure adminTab visible
+    showAdminTab();
+  } else {
+    rolePanelTitle.textContent = 'Panel Usuario';
+    rolePanelContent.innerHTML = `
+      <p class="placeholder">Vista adaptada al rol: <strong>${role || 'usuario'}</strong></p>
+      <p>Puedes ver los módulos disponibles y tus métricas.</p>
+    `;
+  }
+  rolePanel.scrollIntoView({ behavior: 'smooth' });
+}
+
+function hideRolePanel() {
+  if (!rolePanel) return;
+  rolePanel.style.display = 'none';
+}
+
+function showPublicUI() {
+  try { if (accessAside) accessAside.style.display = 'block'; } catch(e){}
+  try { if (publicArea) publicArea.style.display = 'block'; } catch(e){}
 }
 
 function getToken() {
@@ -250,6 +303,8 @@ logoutBtn.addEventListener('click', async () => {
     setStatus('Logout ejecutado correctamente.');
     showToast('Sesión cerrada.', 'success');
     hideAdminTab();
+    hideRolePanel();
+    showPublicUI();
   } catch (error) {
     setStatus(error.message, true);
   }

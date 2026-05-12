@@ -24,7 +24,7 @@
       </header>
 
       <section class="grid-layout">
-        <aside class="card reveal delay-1">
+        <aside id="accessAside" class="card reveal delay-1">
           <h2>Acceso</h2>
           <p class="muted">Inicia sesion y la vista se adapta por rol y pais.</p>
           <form id="loginForm" class="form-grid">
@@ -56,49 +56,57 @@
         </aside>
 
         <section class="main-column">
-          <section class="card reveal delay-2">
-            <h2>Sesion</h2>
-            <div class="session-grid">
-              <article>
-                <span class="label">Token</span>
-                <p id="tokenBox" class="mono">Sin token</p>
-              </article>
-              <article>
-                <span class="label">Rol</span>
-                <p id="roleBox">-</p>
-              </article>
-              <article>
-                <span class="label">Pais</span>
-                <p id="countryBox">-</p>
-              </article>
-            </div>
-            <pre id="statusBox" class="status-box">Listo para probar</pre>
-          </section>
+          <div id="publicArea">
+            <section class="card reveal delay-2">
+              <h2>Sesion</h2>
+              <div class="session-grid">
+                <article>
+                  <span class="label">Token</span>
+                  <p id="tokenBox" class="mono">Sin token</p>
+                </article>
+                <article>
+                  <span class="label">Rol</span>
+                  <p id="roleBox">-</p>
+                </article>
+                <article>
+                  <span class="label">Pais</span>
+                  <p id="countryBox">-</p>
+                </article>
+              </div>
+              <pre id="statusBox" class="status-box">Listo para probar</pre>
+            </section>
 
-          <section class="card reveal delay-3">
-            <h2>Dashboard principal</h2>
-            <div class="kpi-grid">
-              <article>
-                <span class="kpi-label">Solicitudes pendientes</span>
-                <strong id="kpiPending">-</strong>
-              </article>
-              <article>
-                <span class="kpi-label">Testimonios publicados</span>
-                <strong id="kpiTestimonials">-</strong>
-              </article>
-              <article>
-                <span class="kpi-label">Noticias activas</span>
-                <strong id="kpiNews">-</strong>
-              </article>
-            </div>
-            <pre id="metricsBox">Aun no cargado</pre>
+            <section class="card reveal delay-3">
+              <h2>Dashboard principal</h2>
+              <div class="kpi-grid">
+                <article>
+                  <span class="kpi-label">Solicitudes pendientes</span>
+                  <strong id="kpiPending">-</strong>
+                </article>
+                <article>
+                  <span class="kpi-label">Testimonios publicados</span>
+                  <strong id="kpiTestimonials">-</strong>
+                </article>
+                <article>
+                  <span class="kpi-label">Noticias activas</span>
+                  <strong id="kpiNews">-</strong>
+                </article>
+              </div>
+              <pre id="metricsBox">Aun no cargado</pre>
+            </section>
+          </div>
+
+          <!-- Role-specific panel (rendered after login) -->
+          <section id="rolePanel" class="card reveal delay-4" style="display:none;">
+            <h2 id="rolePanelTitle">Panel del usuario</h2>
+            <div id="rolePanelContent">Inicia sesión para ver el panel correspondiente a tu rol.</div>
           </section>
 
           <section class="card reveal delay-4">
             <h2>Modulos disponibles por rol</h2>
             <div id="moduleGrid" class="module-grid"></div>
           </section>
-    
+
           <section id="adminTab" class="card reveal delay-5" style="display:none;">
             <h2>Panel Admin</h2>
             <p class="muted">Aqui puedes crear usuarios (admin) y gestionar crud basico.</p>
