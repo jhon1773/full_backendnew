@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { UserController } from "../../services/controller/user";
 import { RoutesApp } from "../../../core/routes";
+import { authenticate } from '../../middlewares/auth.middleware';
 
 export class AuthRoutes extends RoutesApp {
 
@@ -16,6 +17,7 @@ export class AuthRoutes extends RoutesApp {
 
     protected setServicesRoutes(): void {
         this.router.post('/create', this.userController.create),
-        this.router.post('/', this.userController.login);
+        this.router.post('/', this.userController.login),
+        this.router.post('/logout', authenticate, this.userController.logout.bind(this.userController));
     }
 }   

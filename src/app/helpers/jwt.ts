@@ -6,20 +6,22 @@ import { CONFIG } from '../../config';
 // Define una interfaz para extender el JwtPayload y asegurar que el payload personalizado contiene una propiedad id de tipo string
 interface CustomJwtPayload extends JwtPayload {
   id: string;
+  role?: string;
+  country?: string | null;
 }
 
-// Función asíncrona para generar un token JWT tomando como argumento el id del usuario
-export async function generateToken(id) : Promise<any> {
+// Genera un JWT con id, rol y país opcionales. Expira en 48 horas.
+export async function generateToken(id: string, role?: string, country?: string | null): Promise<string | undefined> {
   try {
-    // Crea un objeto payload que contiene únicamente el id
-    const payload = { id };
-    // Firma el payload para crear el token, usando la llave secreta y configurando su expiración a 48 horas
-    const token =  jwt.sign(payload, CONFIG.jwt_key, {expiresIn: '48h'});
-    // Retorna el token generado
+    const payload: Partial<CustomJwtPayload> = { id };
+    if (role) payload.role = role;
+    if (country !== undefined) payload.country = country;
+
+    const token = jwt.sign(payload as CustomJwtPayload, CONFIG.jwt_key, { expiresIn: '48h' });
     return token;
   } catch (error) {
-    // En caso de error al generar el token, muestra el error por consola
-    console.error('no se pudo gererar el jwt', error); 
+    console.error('no se pudo generar el jwt', error);
+    return undefined;
   }
 }
 

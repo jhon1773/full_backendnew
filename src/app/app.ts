@@ -2,8 +2,9 @@ import bodyParser from "body-parser";
 import express, { Express } from "express";
 import { Request, Response } from "express";
 import cors from "cors";
+import path from "path";
 import { ServerApp } from "../core/server";
-import { dbConnection } from "./database/mongo/connect";
+import { dbConnection } from "./database/postgres/connection";
 import { CONFIG } from "../config";
 import { RoutesApi } from "./routes/routes";
 
@@ -26,6 +27,7 @@ export class Server implements ServerApp {
   protected setServerComunication(): void {
     this.app.use(bodyParser.json());
     this.app.use(cors());
+    this.app.use(express.static(path.join(__dirname, "../public")));
   }
 
   async start() {
@@ -41,9 +43,9 @@ export class Server implements ServerApp {
       }
     })
 
-    // Ruta raíz de prueba para verificar que el servidor está activo
+    // Ruta raíz: entrega el front básico para pruebas
     this.app.get("/", (_req: Request, res: Response) => {
-      res.send("Hello World");
+      res.sendFile(path.join(__dirname, "../public/index.html"));
     });
 
     // Inicia el servidor HTTP y comienza a escuchar en el puerto configurado
@@ -61,16 +63,20 @@ export class Server implements ServerApp {
   }
 }
 
-// Punto de entrada: crea el servidor, lo inicia y conecta la base de datos
+// Punto de entrada: crea el servidor y, si no estamos en tests, lo inicia y conecta la base de datos
 const server = new Server();
 
-try {
-  (async () => {
-    await server.start();
-    dbConnection();
-    console.log(`API listen on ${CONFIG.app.port}`);
-  })();
+if (process.env.NODE_ENV !== 'test') {
+  try {
+    (async () => {
+      await server.start();
+      dbConnection();
+      console.log(`API listen on ${CONFIG.app.port}`);
+    })();
 
-} catch (error) {
-  console.log("error levantando el servidor", { error });
+  } catch (error) {
+    console.log("error levantando el servidor", { error });
+  }
 }
+
+export default server;

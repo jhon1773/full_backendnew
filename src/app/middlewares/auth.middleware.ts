@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { checkToken } from '../helpers/jwt';
-import { UserModel } from '../models/user';
+import { findBlacklistedToken } from '../repositories/token-blacklist.repository';
+import { findUserById } from '../repositories/user.repository';
 
 declare global {
   namespace Express {
@@ -20,13 +21,25 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
 
     const token = authHeader.split(' ')[1];
     
+    // Verifica si el token está en la blacklist (cerró sesión previamente)
+    const black = await findBlacklistedToken(token);
+    if (black) {
+      res.status(401).json({ ok: false, error_message: 'Token inválido o expirado (logout)' });
+      return;
+    }
+
     const [valid, result] = checkToken(token);
     if (!valid) {
       res.status(401).json({ ok: false, error_message: 'Token inválido o expirado' });
       return;
     }
 
-    const user = await UserModel.findOne({ id: result });
+    if (typeof result !== 'string') {
+      res.status(401).json({ ok: false, error_message: 'Token inválido o expirado' });
+      return;
+    }
+
+    const user = await findUserById(result);
     if (!user) {
       res.status(401).json({ ok: false, error_message: 'Usuario no encontrado' });
       return;
