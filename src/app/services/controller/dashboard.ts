@@ -1,51 +1,62 @@
 import { Request, Response } from 'express';
-// Aquí importarías los modelos de solicitudes, testimonios y noticias
-// cuando los tengas. Por ahora usamos datos simulados.
+import { getPool } from '../../database/postgres/connection';
 
 export class DashboardController {
-
-  async getMetrics(req: Request, res: Response) {
-    const user = req.user; // Ya viene del middleware authenticate
+  async getMetrics(req: Request, res: Response): Promise<Response> {
+    const user = req.user;
 
     try {
-      if (user.role === 'superadmin') {
-        // Superadmin ve métricas GLOBALES de todos los países
-        const metrics = {
-          role: 'superadmin',
-          // Cuando tengas los modelos reales, harías:
-          // pendingRequests: await RequestModel.countDocuments({ status: 'pending' }),
-          // publishedTestimonials: await TestimonialModel.countDocuments({ published: true }),
-          // activeNews: await NewsModel.countDocuments({ active: true }),
-          pendingRequests: 42,       // ← reemplazar con query real
-          publishedTestimonials: 18,
-          activeNews: 7,
-          breakdown_by_country: [
-            { country: 'Colombia', pending: 15 },
-            { country: 'México', pending: 27 },
-          ]
-        };
-        return res.status(200).json({ ok: true, metrics });
+      if (!user) {
+        return res.status(401).json({ ok: false, error_message: 'No autenticado' });
       }
 
-      if (user.role === 'admin_pais' || user.role === 'editor') {
-        // Solo ven datos de SU país
-        const metrics = {
-          role: user.role,
-          country: user.country,
-          // pendingRequests: await RequestModel.countDocuments({ 
-          //   status: 'pending', country: user.country 
-          // }),
-          pendingRequests: 10,
-          publishedTestimonials: 5,
-          activeNews: 3,
-        };
-        return res.status(200).json({ ok: true, metrics });
+      const countryFilter = user.role === 'superadmin' ? null : user.country;
+
+      const requestParams: Array<string> = [];
+      const testimonialParams: Array<string> = [];
+      const newsParams: Array<string> = [];
+
+      const requestWhere = countryFilter ? 'country = $1 AND status = $2' : "status = 'pendiente'";
+      if (countryFilter) {
+        requestParams.push(countryFilter, 'pendiente');
       }
 
-    } catch (error) {
+      const testimonialWhere = countryFilter ? 'country = $1 AND publication_status = $2' : "publication_status = 'publicado'";
+      if (countryFilter) {
+        testimonialParams.push(countryFilter, 'publicado');
+      }
+
+      const newsWhere = countryFilter ? 'country = $1 AND status = $2' : "status = 'publicado'";
+      if (countryFilter) {
+        newsParams.push(countryFilter, 'publicado');
+      }
+
+      const [requests, testimonials, news] = await Promise.all([
+        getPool().query<{ count: string }>(
+          `SELECT COUNT(*)::text AS count FROM contact_requests WHERE ${requestWhere}`,
+          requestParams
+        ),
+        getPool().query<{ count: string }>(
+          `SELECT COUNT(*)::text AS count FROM testimonials WHERE ${testimonialWhere}`,
+          testimonialParams
+        ),
+        getPool().query<{ count: string }>(
+          `SELECT COUNT(*)::text AS count FROM news WHERE ${newsWhere}`,
+          newsParams
+        ),
+      ]);
+
+      const metrics = {
+        role: user.role,
+        country: user.country ?? null,
+        pendingRequests: Number(requests.rows[0]?.count ?? '0'),
+        publishedTestimonials: Number(testimonials.rows[0]?.count ?? '0'),
+        activeNews: Number(news.rows[0]?.count ?? '0'),
+      };
+
+      return res.status(200).json({ ok: true, metrics });
+    } catch (_error) {
       return res.status(500).json({ ok: false, error_message: 'Error obteniendo métricas' });
     }
-      return;
   }
-
 }

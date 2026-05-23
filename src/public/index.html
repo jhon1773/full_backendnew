@@ -17,16 +17,76 @@
             <p>CMS movil para Colombia, Chile y Ecuador</p>
           </div>
         </div>
+        <div class="topbar-meta">
+          <span class="topbar-chip">Admin mobile</span>
+          <span class="topbar-chip subtle">UI premium</span>
+        </div>
         <div class="top-actions">
-          <button id="metricsBtn" class="btn btn-soft">Actualizar dashboard</button>
+          <button id="homeBtn" class="btn btn-soft">Inicio</button>
+          <button id="loginNavBtn" class="btn btn-soft">Login</button>
           <button id="logoutBtn" class="btn btn-soft danger">Cerrar sesion</button>
         </div>
       </header>
 
-      <section class="grid-layout">
-        <aside id="accessAside" class="card reveal delay-1">
-          <h2>Acceso</h2>
-          <p class="muted">Inicia sesion y la vista se adapta por rol y pais.</p>
+      <section id="homeView" data-panel="home" class="home-view">
+
+        <section class="landing-view card reveal delay-1" id="landingView" data-panel="home">
+          <div>
+            <span class="eyebrow">Operación institucional premium</span>
+            <h2>Un centro de control claro, elegante y listo para operar contenido, solicitudes y portales.</h2>
+            <p class="hero-copy">Latinoamerica Comparte Admin reúne todo en una sola experiencia para equipos que necesitan publicar, responder y supervisar por país con agilidad, control y una presentación profesional.</p>
+          </div>
+          <div class="landing-actions">
+            <button id="goLoginBtn" class="btn">Ir al login</button>
+            <button id="goDashboardBtn" class="btn btn-soft">Ver panel</button>
+          </div>
+        </section>
+
+        <section class="story-grid reveal delay-1">
+          <article class="story-card">
+            <span class="panel-kicker">Qué ofrece</span>
+            <h3>Gestión multipaís sin fricción</h3>
+            <p>Unifica contenido y solicitudes en un solo flujo para que cada equipo trabaje con foco, permisos claros y menos pasos repetidos.</p>
+          </article>
+          <article class="story-card">
+            <span class="panel-kicker">Por qué importa</span>
+            <h3>Orden y trazabilidad</h3>
+            <p>Reduce dispersión operativa, da seguimiento a cada estado y mejora la respuesta del equipo con una experiencia más limpia y predecible.</p>
+          </article>
+          <article class="story-card">
+            <span class="panel-kicker">Impacto</span>
+            <h3>Más velocidad, mejor control</h3>
+            <p>La plataforma separa por país y rol para que cada perfil vea solo lo relevante y la operación conserve una línea de trabajo consistente.</p>
+          </article>
+        </section>
+
+        <section class="feature-grid reveal delay-2">
+          <article class="feature-card feature-large">
+            <span class="panel-kicker">Visión</span>
+            <h3>Una experiencia lista para verse y sentirse como producto final</h3>
+            <p>La interfaz equilibra claridad visual, jerarquía de contenido y ritmo de navegación para que el sistema se perciba sólido, confiable y fácil de usar desde el primer acceso.</p>
+          </article>
+          <article class="feature-card">
+            <span class="panel-kicker">Cobertura</span>
+            <h3>Preparado para crecer por país</h3>
+            <p>La base está pensada para escalar la operación sin perder control del contenido ni de las solicitudes entrantes en cada sede.</p>
+          </article>
+          <article class="feature-card">
+            <span class="panel-kicker">Seguridad</span>
+            <h3>Acceso con JWT y roles</h3>
+            <p>Autenticación protegida, navegación adaptada al perfil y un panel que responde automáticamente al tipo de usuario.</p>
+          </article>
+        </section>
+
+      </section>
+
+      <section id="loginView" class="auth-layout is-hidden" data-panel="login">
+        <aside class="card auth-card reveal delay-1">
+          <div class="panel-heading">
+            <span class="panel-kicker">Acceso seguro</span>
+            <h2>Iniciar sesión</h2>
+            <p class="muted">Ingresa con tu correo y contraseña para entrar al panel correspondiente.</p>
+          </div>
           <form id="loginForm" class="form-grid">
             <label>
               Correo
@@ -38,27 +98,68 @@
             </label>
             <button type="submit" class="btn">Iniciar sesion</button>
           </form>
-
-          <h3>Crear usuario (pruebas)</h3>
-          <form id="createForm" class="form-grid compact">
-            <input name="name" placeholder="Nombre" required />
-            <input name="email" type="email" placeholder="Correo" required />
-            <input name="phone" placeholder="Telefono" required />
-            <input name="password" type="password" placeholder="Contrasena" required />
-            <select name="role">
-              <option value="editor">editor</option>
-              <option value="admin_pais">admin_pais</option>
-              <option value="superadmin">superadmin</option>
-            </select>
-            <input name="country" placeholder="Pais (opcional)" />
-            <button type="submit" class="btn btn-soft">Crear usuario</button>
-          </form>
         </aside>
+      </section>
 
-        <section class="main-column">
-          <div id="publicArea">
+      <section class="app-view is-hidden" id="dashboardView" data-panel="dashboard">
+        <div class="workspace-layout">
+          <aside class="workspace-sidebar reveal delay-1">
+            <section class="card sidebar-card">
+              <div class="panel-heading compact">
+                <span class="panel-kicker">Navegación</span>
+                <h2>Workspace</h2>
+                <p class="muted">Cambie entre vista general, módulos y administración.</p>
+              </div>
+
+              <nav class="sidebar-nav" aria-label="Navegación principal">
+                <button type="button" class="nav-tab active" data-tab="overview" aria-pressed="true">
+                  <span class="nav-icon" aria-hidden="true">⌂</span>
+                  <span>
+                    <strong>Resumen</strong>
+                    <small>Estado y sesión</small>
+                  </span>
+                </button>
+                <button type="button" class="nav-tab" data-tab="modules" aria-pressed="false">
+                  <span class="nav-icon" aria-hidden="true">◫</span>
+                  <span>
+                    <strong>Módulos</strong>
+                    <small>Acceso por rol</small>
+                  </span>
+                </button>
+                <button type="button" class="nav-tab" data-tab="admin" aria-pressed="false">
+                  <span class="nav-icon" aria-hidden="true">⚙</span>
+                  <span>
+                    <strong>Admin</strong>
+                    <small>Gestión operativa</small>
+                  </span>
+                </button>
+              </nav>
+
+              <div class="sidebar-mini-grid">
+                <article>
+                  <span class="label">Rol</span>
+                  <p id="roleBox" class="sidebar-value">-</p>
+                </article>
+                <article>
+                  <span class="label">País</span>
+                  <p id="countryBox" class="sidebar-value">-</p>
+                </article>
+                <article class="span-2">
+                  <span class="label">Token</span>
+                  <p id="tokenBox" class="mono sidebar-token">Sin token</p>
+                </article>
+              </div>
+            </section>
+          </aside>
+
+          <section class="main-column">
+          <div id="publicArea" data-panel="overview">
             <section class="card reveal delay-2">
-              <h2>Sesion</h2>
+              <div class="panel-heading">
+                <span class="panel-kicker">Contexto</span>
+                <h2>Sesión activa</h2>
+                <p class="muted">Token, rol y país se mantienen visibles para facilitar validación.</p>
+              </div>
               <div class="session-grid">
                 <article>
                   <span class="label">Token</span>
@@ -77,7 +178,10 @@
             </section>
 
             <section class="card reveal delay-3">
-              <h2>Dashboard principal</h2>
+              <div class="panel-heading">
+                <span class="panel-kicker">Resumen</span>
+                <h2>Dashboard principal</h2>
+              </div>
               <div class="kpi-grid">
                 <article>
                   <span class="kpi-label">Solicitudes pendientes</span>
@@ -96,24 +200,37 @@
             </section>
           </div>
 
-          <!-- Role-specific panel (rendered after login) -->
-          <section id="rolePanel" class="card reveal delay-4" style="display:none;">
-            <h2 id="rolePanelTitle">Panel del usuario</h2>
+          <section id="rolePanel" class="card reveal delay-4" data-panel="overview" style="display:none;">
+            <div class="panel-heading">
+              <span class="panel-kicker">Workspace</span>
+              <h2 id="rolePanelTitle">Panel del usuario</h2>
+            </div>
             <div id="rolePanelContent">Inicia sesión para ver el panel correspondiente a tu rol.</div>
           </section>
 
-          <section class="card reveal delay-4">
-            <h2>Modulos disponibles por rol</h2>
+          <section class="card reveal delay-4" data-panel="modules">
+            <div class="panel-heading">
+              <span class="panel-kicker">Arquitectura</span>
+              <h2>Módulos disponibles por rol</h2>
+            </div>
             <div id="moduleGrid" class="module-grid"></div>
           </section>
 
-          <section id="adminTab" class="card reveal delay-5" style="display:none;">
-            <h2>Panel Admin</h2>
-            <p class="muted">Aqui puedes crear usuarios (admin) y gestionar crud basico.</p>
+          <section id="adminTab" class="card reveal delay-5" data-panel="admin" style="display:none;">
+            <div class="panel-heading">
+              <span class="panel-kicker">Administración</span>
+              <h2>Panel Admin</h2>
+              <p class="muted">Aqui puedes crear usuarios, gestionar contenido y operar el sistema con permisos.</p>
+            </div>
             <div id="adminMessage" class="status-box">Panel admin cerrado.</div>
 
-            <h3>Crear usuario (Admin)</h3>
-            <form id="adminCreateForm" class="form-grid compact">
+            <section class="admin-section">
+              <div class="panel-heading compact">
+                <span class="panel-kicker">Usuarios</span>
+                <h3>Crear usuario (Admin)</h3>
+                <p class="muted">Esta acción solo es visible dentro del panel administrativo.</p>
+              </div>
+              <form id="adminCreateForm" class="form-grid compact">
               <input name="name" placeholder="Nombre" required />
               <input name="email" type="email" placeholder="Correo" required />
               <input name="phone" placeholder="Telefono" required />
@@ -125,14 +242,30 @@
               </select>
               <input name="country" placeholder="Pais (opcional)" />
               <button type="submit" class="btn btn-soft">Crear usuario</button>
-            </form>
+              </form>
+            </section>
 
-            <h3>Usuarios</h3>
-            <div id="adminUserList">No hay datos cargados.</div>
+            <section class="admin-section">
+              <div class="panel-heading compact">
+                <span class="panel-kicker">Listado</span>
+                <h3>Usuarios</h3>
+              </div>
+              <div id="adminUserList">No hay datos cargados.</div>
+            </section>
           </section>
-        </section>
+          </section>
+        </div>
+      </section>
       </section>
     </main>
+
+    <template id="skeletonCardTemplate">
+      <article class="card skeleton-card">
+        <div class="skeleton-line w-45"></div>
+        <div class="skeleton-line w-70"></div>
+        <div class="skeleton-line w-90"></div>
+      </article>
+    </template>
 
     <script src="/app.js"></script>
   </body>

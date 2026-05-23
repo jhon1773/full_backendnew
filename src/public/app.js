@@ -8,9 +8,7 @@ const kpiPending = document.getElementById('kpiPending');
 const kpiTestimonials = document.getElementById('kpiTestimonials');
 const kpiNews = document.getElementById('kpiNews');
 const loginForm = document.getElementById('loginForm');
-const createForm = document.getElementById('createForm');
 const logoutBtn = document.getElementById('logoutBtn');
-const metricsBtn = document.getElementById('metricsBtn');
 const adminTab = document.getElementById('adminTab');
 const adminCreateForm = document.getElementById('adminCreateForm');
 const adminUserList = document.getElementById('adminUserList');
@@ -20,6 +18,13 @@ const rolePanelTitle = document.getElementById('rolePanelTitle');
 const rolePanelContent = document.getElementById('rolePanelContent');
 const accessAside = document.getElementById('accessAside');
 const publicArea = document.getElementById('publicArea');
+const rolePanelSkeleton = document.getElementById('skeletonCardTemplate');
+const homeBtn = document.getElementById('homeBtn');
+const loginNavBtn = document.getElementById('loginNavBtn');
+const goLoginBtn = document.getElementById('goLoginBtn');
+const navTabs = Array.from(document.querySelectorAll('.nav-tab'));
+const workspacePanels = Array.from(document.querySelectorAll('#publicArea, #rolePanel, #adminTab, .main-column > section[data-panel]'));
+const mainViews = Array.from(document.querySelectorAll('#homeView, #loginView, #dashboardView'));
 
 const API = '';
 
@@ -69,6 +74,97 @@ const modules = [
 ];
 
 let currentUser = null;
+let currentTab = 'overview';
+let currentView = 'home';
+
+function setLoadingState(isLoading) {
+  const targets = [metricsBox, statusBox, adminMessage];
+  for (const target of targets) {
+    if (!target) continue;
+    target.classList.toggle('loading-state', isLoading);
+  }
+}
+
+function setActiveTab(tabName) {
+  currentTab = tabName;
+
+  navTabs.forEach((button) => {
+    const isActive = button.dataset.tab === tabName;
+    button.classList.toggle('active', isActive);
+    button.setAttribute('aria-pressed', String(isActive));
+  });
+
+  workspacePanels.forEach((panel) => {
+    const isVisible = panel.dataset.panel === tabName;
+    panel.classList.toggle('is-hidden', !isVisible);
+  });
+
+  if (tabName === 'admin' && adminTab) {
+    adminTab.style.display = 'block';
+  }
+
+  if (tabName !== 'admin' && adminTab) {
+    adminTab.style.display = 'none';
+  }
+}
+
+function setActiveView(viewName) {
+  currentView = viewName;
+
+  mainViews.forEach((view) => {
+    const viewId = view.id === 'homeView' ? 'home' : view.id === 'loginView' ? 'login' : 'dashboard';
+    view.classList.toggle('is-hidden', viewId !== viewName);
+  });
+
+  if (viewName === 'dashboard') {
+    setActiveTab(currentTab || 'overview');
+  }
+
+  if (viewName !== 'dashboard') {
+    hideAdminTab();
+    hideRolePanel();
+  }
+}
+
+function mountSkeletons() {
+  if (!rolePanel || !rolePanelSkeleton) return;
+  const fragment = document.createDocumentFragment();
+  for (let index = 0; index < 2; index += 1) {
+    fragment.appendChild(rolePanelSkeleton.content.cloneNode(true));
+  }
+  rolePanel.appendChild(fragment);
+}
+
+mountSkeletons();
+
+if (homeBtn) {
+  homeBtn.addEventListener('click', () => setActiveView('home'));
+}
+
+if (loginNavBtn) {
+  loginNavBtn.addEventListener('click', () => setActiveView('login'));
+}
+
+if (goLoginBtn) {
+  goLoginBtn.addEventListener('click', () => setActiveView('login'));
+}
+
+navTabs.forEach((button) => {
+  button.addEventListener('click', () => {
+    const tabName = button.dataset.tab || 'overview';
+    setActiveTab(tabName);
+    if (tabName === 'admin') {
+      showAdminTab();
+    }
+    if (tabName === 'modules') {
+      document.querySelector('[data-panel="modules"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+    if (tabName === 'overview') {
+      document.querySelector('[data-panel="overview"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
 
 function setStatus(message, isError = false) {
   statusBox.textContent = message;
@@ -97,7 +193,8 @@ function showToast(message, type = 'error', timeout = 4200) {
 
 function showAdminTab() {
   if (!adminTab) return;
-  adminTab.style.display = 'block';
+  setActiveTab('admin');
+  setActiveView('dashboard');
   adminMessage.textContent = 'Panel admin activo.';
   adminTab.scrollIntoView({ behavior: 'smooth' });
 }
@@ -139,14 +236,22 @@ function setSession(token, user) {
   renderModules(user?.role);
   // show role-specific panel when session is set
   if (user) showRolePanel(user.role, user);
-  // hide public UI (login/create/dashboard) after successful login
+  // hide public UI (login/home) after successful login
   try { if (accessAside) accessAside.style.display = 'none'; } catch(e){}
   try { if (publicArea) publicArea.style.display = 'none'; } catch(e){}
+  setActiveView('dashboard');
+  if (user && ['superadmin', 'admin_pais'].includes(user.role)) {
+    setActiveTab('admin');
+  } else {
+    setActiveTab('overview');
+  }
 }
 
 function showRolePanel(role, user) {
   if (!rolePanel) return;
   rolePanel.style.display = 'block';
+  const skeletonCards = rolePanel.querySelectorAll('.skeleton-card');
+  skeletonCards.forEach((card) => card.remove());
   if (role === 'editor') {
     rolePanelTitle.textContent = 'Panel Editor';
     rolePanelContent.innerHTML = `
@@ -185,6 +290,8 @@ function hideRolePanel() {
 function showPublicUI() {
   try { if (accessAside) accessAside.style.display = 'block'; } catch(e){}
   try { if (publicArea) publicArea.style.display = 'block'; } catch(e){}
+  setActiveView('home');
+  setActiveTab('overview');
 }
 
 function getToken() {
@@ -235,34 +342,13 @@ async function api(path, options = {}) {
   return data;
 }
 
-createForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const formData = new FormData(createForm);
-  const payload = Object.fromEntries(formData.entries());
-
-  try {
-    const data = await api('/api/v1/user/create', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-
-    setStatus('Usuario creado correctamente. Ya puedes iniciar sesión.');
-    showToast('Usuario creado correctamente.', 'success');
-    metricsBox.textContent = JSON.stringify(data, null, 2);
-    // If admin panel is open, add user to list
-    try { renderAdminUser(data.user || data); } catch(e){}
-  } catch (error) {
-    setStatus(error.message, true);
-    showToast(error.message, 'error');
-  }
-});
-
 loginForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const formData = new FormData(loginForm);
   const payload = Object.fromEntries(formData.entries());
 
   try {
+    setLoadingState(true);
     const data = await api('/api/v1/user/', {
       method: 'POST',
       body: JSON.stringify(payload),
@@ -279,23 +365,14 @@ loginForm.addEventListener('submit', async (event) => {
   } catch (error) {
     setStatus(error.message, true);
     showToast(error.message, 'error');
-  }
-});
-
-metricsBtn.addEventListener('click', async () => {
-  try {
-    const data = await api('/api/v1/dashboard/metrics', { method: 'GET' });
-    metricsBox.textContent = JSON.stringify(data, null, 2);
-    paintMetrics(data.metrics);
-    setStatus('Dashboard cargado correctamente.');
-  } catch (error) {
-    setStatus(error.message, true);
-    metricsBox.textContent = 'No se pudieron cargar las métricas.';
+  } finally {
+    setLoadingState(false);
   }
 });
 
 logoutBtn.addEventListener('click', async () => {
   try {
+    setLoadingState(true);
     await api('/api/v1/user/logout', { method: 'POST' });
     setSession(null, null);
     paintMetrics(null);
@@ -305,8 +382,12 @@ logoutBtn.addEventListener('click', async () => {
     hideAdminTab();
     hideRolePanel();
     showPublicUI();
+    setActiveView('home');
+    setActiveTab('overview');
   } catch (error) {
     setStatus(error.message, true);
+  } finally {
+    setLoadingState(false);
   }
 });
 
@@ -316,22 +397,32 @@ renderModules(null);
 if (existingToken) {
   tokenBox.textContent = existingToken;
   setStatus('Token encontrado en localStorage. Inicia sesion para refrescar rol y permisos.');
+  setActiveView('home');
+  setActiveTab('overview');
 }
 
-// Admin create handler
 if (adminCreateForm) {
-  adminCreateForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+  adminCreateForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
     const formData = new FormData(adminCreateForm);
     const payload = Object.fromEntries(formData.entries());
+
     try {
-      const data = await api('/api/v1/user/create', { method: 'POST', body: JSON.stringify(payload) });
+      setLoadingState(true);
+      const data = await api('/api/v1/user/create', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
       adminMessage.textContent = 'Usuario creado desde panel admin.';
       showToast('Usuario creado (admin).', 'success');
-      try { renderAdminUser(data.user || data); } catch(e){}
-    } catch (err) {
-      adminMessage.textContent = err.message;
-      showToast(err.message, 'error');
+      try { renderAdminUser(data.user || data); } catch (e) {}
+      adminCreateForm.reset();
+    } catch (error) {
+      adminMessage.textContent = error.message;
+      showToast(error.message, 'error');
+    } finally {
+      setLoadingState(false);
     }
   });
 }
