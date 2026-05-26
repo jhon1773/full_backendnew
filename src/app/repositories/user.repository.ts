@@ -53,3 +53,24 @@ export async function createUser(input: CreateUserInput): Promise<UserRow> {
 
   return result.rows[0];
 }
+
+export interface UserListFilter {
+  country?: string;
+}
+
+export async function listUsers(filter: UserListFilter = {}): Promise<UserRow[]> {
+  const clauses: string[] = [];
+  const values: Array<string> = [];
+
+  if (filter.country) {
+    values.push(filter.country);
+    clauses.push(`country = $${values.length}`);
+  }
+
+  const whereClause = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  const result = await getPool().query<UserRow>(
+    `SELECT * FROM users ${whereClause} ORDER BY created_at DESC`,
+    values
+  );
+  return result.rows;
+}

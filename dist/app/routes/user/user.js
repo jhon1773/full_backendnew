@@ -14,7 +14,8 @@ class AuthRoutes extends routes_1.RoutesApp {
     }
     setServicesRoutes() {
         this.router.post('/create', this.userController.create),
-            this.router.post('/', this.userController.login),
+            this.router.get('/me', auth_middleware_1.authenticate, this.userController.me.bind(this.userController)),
+            this.router.post('/', this.userController.login.bind(this.userController)),
             this.router.post('/logout', auth_middleware_1.authenticate, this.userController.logout.bind(this.userController));
     }
 }

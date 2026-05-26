@@ -36,6 +36,7 @@ La API escucha en `http://localhost:3000` por defecto.
 **Rutas principales**
 - `POST /api/v1/user/create` — Crear usuario. Campos JSON: `name`, `email`, `phone`, `password`, `role` (opcional), `country` (opcional).
 - `POST /api/v1/user/` — Login. JSON: `email`, `password`. Respuesta contiene `token` y `user`.
+- `GET /api/v1/user/me` — Devuelve la sesión actual autenticada, incluyendo `user`, `modules` permitidos y país/rol.
 - `POST /api/v1/user/logout` — Logout (requiere `Authorization: Bearer <token>`). Añade token a blacklist hasta su expiración.
 - `GET /api/v1/dashboard/metrics` — Métricas según rol (requiere `Authorization` y autorización por rol).
 
@@ -82,6 +83,12 @@ curl -X POST http://localhost:3000/api/v1/user/logout \
 **Comportamiento de tokens**
 - Los tokens JWT contienen `id`, `role` y `country` en su payload y expiran en 48h.
 - Al `logout` el token se guarda en una colección `TokenBlacklist` hasta su fecha de expiración; el middleware deniega cualquier token en esa blacklist.
+- Si el frontend recibe `401`, debe borrar el token local y redirigir al login.
+
+**Roles reales**
+- Los roles soportados por el backend son `superadmin`, `admin_pais` y `editor`.
+- No existe un rol genérico `admin`; si el frontend usa esa etiqueta, debe mapearla a uno de los tres roles reales.
+- `superadmin` ve todo, `admin_pais` queda limitado a su país y `editor` solo opera contenido permitido para su país.
 
 **Recomendaciones para cliente móvil**
 - Almacenar el token en almacenamiento seguro (`SecureStorage`, `EncryptedSharedPreferences`) según plataforma.

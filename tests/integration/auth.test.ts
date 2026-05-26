@@ -259,4 +259,16 @@ describe('RF-03 to RF-07 flows with PostgreSQL', () => {
     expect(toggled.status).toBe(200);
     expect(toggled.body.news.status).toBe('publicado');
   });
+
+  test('RF-01 current session endpoint returns role, country and modules', async () => {
+    const res = await request(app)
+      .get('/api/v1/user/me')
+      .set('Authorization', `Bearer ${superToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.user.role).toBe('superadmin');
+    expect(res.body.user.country).toBe('Colombia');
+    expect(Array.isArray(res.body.modules)).toBe(true);
+    expect(res.body.modules.some((module: any) => module.id === 'portals')).toBe(true);
+  });
 });

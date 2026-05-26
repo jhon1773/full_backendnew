@@ -40,7 +40,17 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jwt_1 = require("../../helpers/jwt");
 const user_repository_1 = require("../../repositories/user.repository");
 const token_blacklist_repository_1 = require("../../repositories/token-blacklist.repository");
+const permissions_1 = require("../permissions");
 class UserController {
+    buildSessionResponse(user, token) {
+        return {
+            ok: true,
+            message: token ? 'usuario logeado' : 'sesión activa',
+            user,
+            token,
+            modules: (0, permissions_1.getAllowedModules)(user.role),
+        };
+    }
     create(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             // let  name = req.body.name;
@@ -67,7 +77,8 @@ class UserController {
                 return res.status(200).json({
                     message: 'User created successfully',
                     user: (0, user_repository_1.toPublicUser)(user_model),
-                    token
+                    token,
+                    modules: (0, permissions_1.getAllowedModules)(user_model.role),
                 });
             }
             catch (error) {
@@ -87,11 +98,25 @@ class UserController {
                 if (!validPassword)
                     return res.status(400).json({ ok: false, error_message: 'la contraseña no es valida' });
                 const token = yield (0, jwt_1.generateToken)(find_user.id, find_user.role, find_user.country);
-                return res.status(200).json({ ok: true, message: 'usuario logeado', user: (0, user_repository_1.toPublicUser)(find_user), token });
+                return res.status(200).json(this.buildSessionResponse((0, user_repository_1.toPublicUser)(find_user), token));
             }
             catch (error) {
                 console.error('error en el login', error);
                 return res.status(400).json({ ok: false, error_message: `error al intentar logearse ${error}` });
+            }
+        });
+    }
+    me(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!req.user) {
+                    return res.status(401).json({ ok: false, error_message: 'No autenticado' });
+                }
+                return res.status(200).json(this.buildSessionResponse((0, user_repository_1.toPublicUser)(req.user)));
+            }
+            catch (error) {
+                console.error('error obteniendo la sesión actual', error);
+                return res.status(500).json({ ok: false, error_message: 'Error obteniendo la sesión actual' });
             }
         });
     }
